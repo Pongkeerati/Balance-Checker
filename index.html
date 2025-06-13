@@ -117,13 +117,14 @@
         const passwordIndex = headers.findIndex(h => h.trim() === "password");
         const balanceIndex = headers.findIndex(h => h.trim() === "balance");
         const nameIndex = headers.findIndex(h => h.trim() === "name");
+        const dateIndex = headers.findIndex(h => h.trim() === "date");
         const match = dataRows.find(row => row[passwordIndex]?.trim() === password);
        
 
         if (match) {
           const balance = match[balanceIndex];
           const name = match[nameIndex];
-          resultEl.textContent = `ชื่อ: ${name} ยอดเงินของคุณคือ: ${balance} บาท`;
+          resultEl.textContent = `ชื่อ: ${name} <br> ยอดเงินของคุณคือ: ${balance} บาท <br> ข้อมูล ณ วันที่ ${date} `;
           resultEl.className = "result";
         } else {
           resultEl.innerHTML = "ไม่พบรหัสผ่านนี้ในระบบ";
