@@ -124,7 +124,8 @@
         if (match) {
           const balance = match[balanceIndex];
           const name = match[nameIndex];
-          resultEl.innerHTML = `ชื่อ: ${name} <br> ยอดเงินของคุณคือ: ${balance} บาท ข้อมูล ณ วันที่ ${date}`;
+          const date = match[nameIndex];
+          resultEl.innerHTML = `ชื่อ: ${name} <br> ยอดเงินของคุณคือ: ${balance} บาท <br> ข้อมูล ณ วันที่ ${date}`;
           resultEl.className = "result";
         } else {
           resultEl.innerHTML = "ไม่พบรหัสผ่านนี้ในระบบ";
