@@ -16,16 +16,11 @@
       align-items: center;
       padding: 50px;
     }
-    h2 {
-      color: #333;
-      text-shadow: 0 2px 10px rgb(177, 175, 175);
-    }    
-    h3 {
+    h2, h3 {
       color: #333;
       text-shadow: 0 2px 10px rgb(177, 175, 175);
     }
     .checker {
-      font-family: "Playpen Sans Thai", "Sarabun", "Noto Sans Thai", sans-serif;
       background: white;
       padding: 20px;
       border-radius: 10px;
@@ -42,39 +37,27 @@
       font-size: 1rem;
     }
     button {
-      font-family: "Playpen Sans Thai", "Sarabun", "Noto Sans Thai", sans-serif;
       background-color: #007bff;
-      width: 100%;
       color: white;
       cursor: pointer;
     }
     button:hover {
       background-color: #0056b3;
     }
-    .result {
-      margin-top: 20px;
-      font-size: 1.2rem;
-      color: green;
-      padding: 5px;
-      text-align: center;
-    }
-    .error {
-      color: red;
-    }
     .responsive-img {
-    height: 100px;
-    width: auto;
-    display: block;
-    margin: 0 auto;
+      height: 100px;
+      width: auto;
+      display: block;
+      margin: 0 auto;
     }
     .responsive-text {
-    font-size: clamp(20px, 5vw, 40px);
-   }
+      font-size: clamp(20px, 5vw, 40px);
+    }
     .responsive-text2 {
-    font-size: clamp(18px, 4vw, 35px);
+      font-size: clamp(18px, 4vw, 35px);
     }
     .centered-text {
-    text-align: center;
+      text-align: center;
     }
     .spinner {
       border: 6px solid #f3f3f3;
@@ -93,20 +76,62 @@
       display: none;
       text-align: center;
     }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: white;
+      margin: 15% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+    .close {
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: red;
+    }
+    .modal-error {
+      color: red;
+    }
   </style>
 </head>
 <body>
-  <h1>
-  <img src="บ้านนา.png" alt="Logo" class="responsive-img" style="height:100px; vertical-align:middle;">
-</h1>
-<h2 class="responsive-text centered-text">P.6 Balance Checker</h2>
-<h3 class="responsive-text2 centered-text">เช็คยอดเงินออม ป.6<br>โรงเรียนวัดบ้านนา ปี 2568</h3>
+
+  <h1><img src="บ้านนา.png" alt="Logo" class="responsive-img"></h1>
+  <h2 class="responsive-text centered-text">P.6 Balance Checker</h2>
+  <h3 class="responsive-text2 centered-text">เช็คยอดเงินออม ป.6<br>โรงเรียนวัดบ้านนา ปี 2568</h3>
+
   <div class="checker">
     <label for="password">กรอกรหัสผ่าน:</label>
     <input type="password" id="password" placeholder="ววดดปปปป"/>
     <button onclick="checkBalance()">ตรวจสอบยอดออม</button>
     <div id="loader"><div class="spinner"></div><div>กำลังนับเงิน...</div></div>
-    <div id="result" class="result"></div>
+  </div>
+
+  <!-- Modal -->
+  <div id="resultModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <div id="modalText"></div>
+    </div>
   </div>
 
   <script>
@@ -116,19 +141,20 @@
 
     async function checkBalance() {
       const password = document.getElementById("password").value.trim();
-      const resultEl = document.getElementById("result");
       const loader = document.getElementById("loader");
-      resultEl.innerHTML = "";
-      resultEl.className = "result";
+      const modal = document.getElementById("resultModal");
+      const modalText = document.getElementById("modalText");
+
       loader.style.display = "block";
+      modalText.innerHTML = "";
 
       try {
         const response = await fetch(CSV_URL);
         const csvText = await response.text();
 
         const rows = csvText
-  .split("\n")
-  .map(row => row.split(",").map(cell => cell.replace(/^"|"$/g, "").trim()));
+          .split("\n")
+          .map(row => row.split(",").map(cell => cell.replace(/^"|"$/g, "").trim()));
         const headers = rows[0];
         const dataRows = rows.slice(1);
 
@@ -136,6 +162,7 @@
         const balanceIndex = headers.findIndex(h => h.trim() === "balance");
         const nameIndex = headers.findIndex(h => h.trim() === "name");
         const dateIndex = headers.findIndex(h => h.trim() === "date");
+
         const match = dataRows.find(row => row[passwordIndex]?.trim() === password);
         loader.style.display = "none";
 
@@ -143,19 +170,31 @@
           const balance = match[balanceIndex];
           const name = match[nameIndex];
           const date = match[dateIndex];
-          resultEl.innerHTML = `ชื่อ: ${name} <br> ยอดเงินของคุณคือ: ${balance} บาท <br> ข้อมูล ณ วันที่ ${date}`;
-          resultEl.className = "result";
+          modalText.innerHTML = `ชื่อ: ${name}<br>ยอดเงินของคุณคือ: ${balance} บาท<br>ข้อมูล ณ วันที่ ${date}`;
         } else {
-          resultEl.innerHTML = "ไม่พบรหัสผ่านนี้ในระบบ";
-          resultEl.className = "result error";
+          modalText.innerHTML = "<span class='modal-error'>ไม่พบรหัสผ่านนี้ในระบบ</span>";
         }
+
+        modal.style.display = "block";
       } catch (err) {
         loader.style.display = "none";
-        resultEl.innerHTML = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
-        resultEl.className = "result error";
+        modalText.innerHTML = "<span class='modal-error'>เกิดข้อผิดพลาดในการโหลดข้อมูล</span>";
+        modal.style.display = "block";
         console.error(err);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById("resultModal").style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById("resultModal");
+      if (event.target === modal) {
+        modal.style.display = "none";
       }
     }
   </script>
 </body>
 </html>
+
